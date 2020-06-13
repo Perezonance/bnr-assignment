@@ -19,11 +19,12 @@ func main() {
 	fmt.Println(start())
 }
 
-func start() error{
+func start() error {
 	db, err := storage.NewDynamo()
 	if err != nil {
 		//TODO: ERROR HANDLING
 	}
+
 	s, err := server.NewServer(db)
 	if err != nil {
 		//TODO: ERROR HANDLING

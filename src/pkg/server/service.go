@@ -98,7 +98,54 @@ func (s *Server)postUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server)deleteUser(w http.ResponseWriter, r *http.Request) {
-	writeRes(200, "UNIMPLEMENTED", w)
+	var (
+		users []models.User
+		ids []float64
+		reqIds models.RequestUsersById
+		reqId models.RequestUserById
+	)
+	err := json.NewDecoder(r.Body).Decode(&reqIds)
+	if err != nil {
+		//If not multiple User Ids, check single
+		err := json.NewDecoder(r.Body).Decode(&reqId)
+		if err != nil {
+			//Input invalid
+			fmt.Printf("Input not valid")
+			writeRes(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), w)
+		}
+	}
+	defer func() {
+		err := r.Body.Close()
+		if err != nil {
+			fmt.Printf("Error:%v", err)
+			writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+			return
+		}
+	}()
+
+	ids = append(reqIds.Users, reqId.Id)
+
+	for _, i := range ids {
+		go func(){
+			u, err := s.db.GetUser(i)
+			if err != nil {
+				fmt.Printf("Error:%v", err)
+				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+				return
+			}
+			err = s.db.DeleteUser(u)
+			if err != nil {
+				fmt.Printf("Error:%v", err)
+				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+				return
+			}
+			//TODO: There might be an issue with having many goroutines access this slice. May have to use a channel...
+			users = append(users, u)
+		}()
+	}
+	raw, err := json.Marshal(users)
+	res := string(raw)
+	writeRes(http.StatusOK, res, w)
 }
 
 /////////////////////////////////// Post Service Functions ///////////////////////////////////
@@ -178,5 +225,52 @@ func (s *Server)postPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server)deletePost(w http.ResponseWriter, r *http.Request) {
-	writeRes(200, "UNIMPLEMENTED", w)
+	var (
+		posts []models.Post
+		ids []float64
+		reqIds models.RequestPostsById
+		reqId models.RequestPostById
+	)
+	err := json.NewDecoder(r.Body).Decode(&reqIds)
+	if err != nil {
+		//If not multiple User Ids, check single
+		err := json.NewDecoder(r.Body).Decode(&reqId)
+		if err != nil {
+			//Input invalid
+			fmt.Printf("Input not valid")
+			writeRes(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), w)
+		}
+	}
+	defer func() {
+		err := r.Body.Close()
+		if err != nil {
+			fmt.Printf("Error:%v", err)
+			writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+			return
+		}
+	}()
+
+	ids = append(reqIds.Posts, reqId.Id)
+
+	for _, i := range ids {
+		go func(){
+			u, err := s.db.GetPost(i)
+			if err != nil {
+				fmt.Printf("Error:%v", err)
+				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+				return
+			}
+			err = s.db.DeletePost(u)
+			if err != nil {
+				fmt.Printf("Error:%v", err)
+				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+				return
+			}
+			//TODO: There might be an issue with having many goroutines access this slice. May have to use a channel...
+			posts = append(posts, u)
+		}()
+	}
+	raw, err := json.Marshal(posts)
+	res := string(raw)
+	writeRes(http.StatusOK, res, w)
 }
