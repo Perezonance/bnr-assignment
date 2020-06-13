@@ -43,7 +43,7 @@ func NewDynamo() (*DynamoDB, error){
 
 /////////////////////////////////// User Services ///////////////////////////////////
 
-func (d *DynamoDB)GetUser(id string) (models.User, error){
+func (d *DynamoDB)GetUser(id float64) (models.User, error){
 	fmt.Printf(logRoot + "Searching %v table for user with id:%v\n", userTable, id)
 	fmt.Println("UNIMPLEMENTED")
 	return models.User{}, nil
@@ -62,7 +62,7 @@ func (d *DynamoDB)DeleteUser(user models.User) error {
 
 /////////////////////////////////// Post Services ///////////////////////////////////
 
-func (d *DynamoDB)GetPost(id string) (models.Post, error){
+func (d *DynamoDB)GetPost(id float64) (models.Post, error){
 	fmt.Printf(logRoot + "Searching %v table for post with id:%v\n", postTable, id)
 	fmt.Println("UNIMPLEMENTED")
 	return models.Post{}, nil

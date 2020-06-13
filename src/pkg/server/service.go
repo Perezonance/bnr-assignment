@@ -24,7 +24,47 @@ func NewServer(db *storage.DynamoDB) (Server, error) {
 
 //TODO: need to allow both an array or a single json object as request payload
 func (s *Server)getUser(w http.ResponseWriter, r *http.Request) {
-	writeRes(200, "UNIMPLEMENTED", w)
+	var (
+		users []models.User
+		ids []float64
+		reqIds models.RequestUsersById
+		reqId models.RequestUserById
+	)
+	err := json.NewDecoder(r.Body).Decode(&reqIds)
+	if err != nil {
+		//If not multiple User Ids, check single
+		err := json.NewDecoder(r.Body).Decode(&reqId)
+		if err != nil {
+			//Input invalid
+			fmt.Printf("Input not valid")
+			writeRes(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), w)
+		}
+	}
+	defer func() {
+		err := r.Body.Close()
+		if err != nil {
+			fmt.Printf("Error:%v", err)
+			writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+			return
+		}
+	}()
+
+	ids = append(reqIds.Users, reqId.Id)
+
+	for _, i := range ids {
+		go func(){
+			user, err := s.db.GetUser(i)
+			if err != nil {
+				fmt.Printf("Error:%v", err)
+				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+				return
+			}
+			users = append(users, user)
+		}()
+	}
+	raw, err := json.Marshal(users)
+	res := string(raw)
+	writeRes(http.StatusOK, res, w)
 }
 
 func (s *Server)postUser(w http.ResponseWriter, r *http.Request) {
@@ -43,12 +83,14 @@ func (s *Server)postUser(w http.ResponseWriter, r *http.Request) {
 			writeRes(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), w)
 		}
 	}
-	users = append(users, reqUser.User, reqUsers.Payload)
+	users = append(reqUsers.Payload, reqUser.User)
 	for _, u := range users {
 		go func(){
 			err := s.db.PostUser(u)
 			if err != nil {
-				//TODO: ERROR HANDLING
+				fmt.Printf("Error:%v", err)
+				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+				return
 			}
 		}()
 	}
@@ -62,7 +104,47 @@ func (s *Server)deleteUser(w http.ResponseWriter, r *http.Request) {
 /////////////////////////////////// Post Service Functions ///////////////////////////////////
 
 func (s *Server)getPost(w http.ResponseWriter, r *http.Request) {
-	writeRes(200, "UNIMPLEMENTED", w)
+	var (
+		posts []models.Post
+		ids []float64
+		reqIds models.RequestPostsById
+		reqId models.RequestPostById
+	)
+	err := json.NewDecoder(r.Body).Decode(&reqIds)
+	if err != nil {
+		//If not multiple User Ids, check single
+		err := json.NewDecoder(r.Body).Decode(&reqId)
+		if err != nil {
+			//Input invalid
+			fmt.Printf("Input not valid")
+			writeRes(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), w)
+		}
+	}
+	defer func() {
+		err := r.Body.Close()
+		if err != nil {
+			fmt.Printf("Error:%v", err)
+			writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+			return
+		}
+	}()
+
+	ids = append(reqIds.Posts, reqId.Id)
+
+	for _, i := range ids {
+		go func(){
+			post, err := s.db.GetPost(i)
+			if err != nil {
+				fmt.Printf("Error:%v", err)
+				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+				return
+			}
+			posts = append(posts, post)
+		}()
+	}
+	raw, err := json.Marshal(posts)
+	res := string(raw)
+	writeRes(http.StatusOK, res, w)
 }
 
 func (s *Server)postPost(w http.ResponseWriter, r *http.Request) {
@@ -81,12 +163,14 @@ func (s *Server)postPost(w http.ResponseWriter, r *http.Request) {
 			writeRes(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), w)
 		}
 	}
-	posts = append(posts, reqPost.Post, reqPosts.Payload)
+	posts = append(reqPosts.Payload, reqPost.Post)
 	for _, p := range posts {
 		go func(){
 			err := s.db.PostPost(p)
 			if err != nil {
-				//TODO: ERROR HANDLING
+				fmt.Printf("Error:%v", err)
+				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+				return
 			}
 		}()
 	}
