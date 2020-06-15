@@ -13,6 +13,13 @@ const (
 	port = "8080"
 	addr = "0.0.0.0"
 	fullAddr = addr + ":" + port
+
+	//Dynamo constants
+	dynamoUserTable = "bnr-users"
+	dynamoPostTable = "bnr-posts"
+	dynamoUserTableEndpoint = ""
+	dynamoPostTableEndpoint = ""
+	dynamoRegion = "us-east-2"
 )
 
 func main() {
@@ -20,7 +27,15 @@ func main() {
 }
 
 func start() error {
-	db, err := storage.NewDynamo()
+	dynamoConf := storage.DynamoConfig{
+		UserTable:         dynamoUserTable,
+		PostTable:         dynamoPostTable,
+		UserTableEndpoint: dynamoUserTableEndpoint,
+		PostTableEndpoint: dynamoPostTableEndpoint,
+		AwsRegion:         dynamoRegion,
+	}
+
+	db, err := storage.NewDynamo(dynamoConf)
 	if err != nil {
 		//TODO: ERROR HANDLING
 	}
