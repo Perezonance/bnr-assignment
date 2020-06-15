@@ -6,7 +6,7 @@ import (
 )
 
 func (s *Server)UserHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Received request at UserHandler")
+	fmt.Printf("Received a %v request at UserHandler\n", r.Method)
 	switch r.Method {
 	case http.MethodGet:
 		s.getUser(w, r)
@@ -17,13 +17,14 @@ func (s *Server)UserHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		s.deleteUser(w, r)
 	default:
+		fmt.Printf("ERROR LOG > %v type of Request not handled..", r.Method)
 		writeRes(http.StatusNotFound, http.StatusText(http.StatusNotFound), w)
 	}
 	return
 }
 
 func (s *Server)PostHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Received request at PostHandler")
+	fmt.Printf("Received a %v request at PostHandler\n", r.Method)
 	switch r.Method {
 	case http.MethodGet:
 		s.getPost(w, r)
@@ -34,6 +35,7 @@ func (s *Server)PostHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		s.deletePost(w, r)
 	default:
+		fmt.Printf("ERROR LOG > %v type of Request not handled..", r.Method)
 		writeRes(http.StatusNotFound, http.StatusText(http.StatusNotFound), w)
 	}
 	return
