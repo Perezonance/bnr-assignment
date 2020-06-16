@@ -2,10 +2,10 @@ package storage
 
 import (
 	"fmt"
-
 	"github.com/Perezonance/bnr-assignment/src/pkg/models"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
@@ -33,10 +33,14 @@ type (
 
 func NewDynamo(c DynamoConfig) (*DynamoClient, error){
 	config := &aws.Config{
-		Region: aws.String(c.AwsRegion),
+		Credentials: credentials.NewSharedCredentials("", "perezonance-dynamo"),
+		Region:      aws.String(c.AwsRegion),
 	}
-
-	sess := session.Must(session.NewSession(config))
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		Config:  			*config,
+		Profile:           	"perezonance-dynamo",
+		SharedConfigState: 	session.SharedConfigEnable,
+	}))
 
 	svc := dynamodb.New(sess)
 
@@ -45,7 +49,6 @@ func NewDynamo(c DynamoConfig) (*DynamoClient, error){
 		userTable: c.UserTable,
 		postTable: c.PostTable,
 	}, nil
-
 }
 
 //TODO:Implement Business Logic
