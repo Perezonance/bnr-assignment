@@ -3,17 +3,12 @@ package storage
 import (
 	"fmt"
 	"github.com/Perezonance/bnr-assignment/src/pkg/models"
+	"github.com/Perezonance/bnr-assignment/src/pkg/util"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-)
-
-const (
-	//Temp structured logging solution
-	errLog 		= "ERROR LOG >> "
-	infoLog 	= "INFO  LOG >> "
 )
 
 type (
@@ -32,7 +27,7 @@ type (
 	}
 )
 
-func NewDynamo(c DynamoConfig) (*DynamoClient){
+func NewDynamo(c DynamoConfig) *DynamoClient{
 	return &DynamoClient{
 		db:        dynamodb.New(c.AWSSession),
 		userTable: c.UserTable,
@@ -44,6 +39,7 @@ func NewDynamo(c DynamoConfig) (*DynamoClient){
 
 func (d *DynamoClient)GetUser(id float64) (models.User, error){
 	fmt.Printf("%vSearching %v table for user with id:%v\n", infoLog, d.userTable, id)
+	util.InfoLog("Searching %v table for user with id:%v", d.userTable, id)
 
 	u := models.User{}
 
