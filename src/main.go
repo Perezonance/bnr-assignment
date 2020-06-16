@@ -9,17 +9,26 @@ import (
 )
 
 const (
+	//Temp structured logging solution
+	errLog 		= "ERROR LOG >> "
+	infoLog 	= "INFO  LOG >> "
+
 	root = "/api/v1"
 	port = "8080"
 	addr = "0.0.0.0"
 	fullAddr = addr + ":" + port
+
+	//AWS Session constants
+	sessAWSRegion = "us-east-2"
+	sessAWSCredentialsProfile = "perezonance-dynamo"
+	sessAWSConfigProfile = "perezonance-dynamo"
+	sessAWSConfigFile = ""
 
 	//Dynamo constants
 	dynamoUserTable = "bnr-users"
 	dynamoPostTable = "bnr-posts"
 	dynamoUserTableEndpoint = ""
 	dynamoPostTableEndpoint = ""
-	dynamoRegion = "us-east-2"
 )
 
 func main() {
@@ -27,28 +36,41 @@ func main() {
 }
 
 func start() error {
-	dynamoConf := storage.DynamoConfig{
-		UserTable:         dynamoUserTable,
-		PostTable:         dynamoPostTable,
-		UserTableEndpoint: dynamoUserTableEndpoint,
-		PostTableEndpoint: dynamoPostTableEndpoint,
-		AwsRegion:         dynamoRegion,
+	sessionConf := storage.AWSSessionConfig{
+		AWSRegion:             sessAWSRegion,
+		AWSCredentialsProfile: sessAWSCredentialsProfile,
+		AWSConfigProfile:      sessAWSConfigProfile,
+		AWSConfigFile:         sessAWSConfigFile,
 	}
 
-	db, err := storage.NewDynamo(dynamoConf)
+	sess, err := storage.NewAWSSession(sessionConf)
 	if err != nil {
-		//TODO: ERROR HANDLING
+		fmt.Printf(errLog + "Failed to establish an AWS session:\n%v\n", err)
+		return err
 	}
+
+	dynamoConf := storage.DynamoConfig{
+		UserTable:        	dynamoUserTable,
+		PostTable:        	dynamoPostTable,
+		UserTableEndpoint: 	dynamoUserTableEndpoint,
+		PostTableEndpoint: 	dynamoPostTableEndpoint,
+		AWSSession:     	sess,
+	}
+
+	db := storage.NewDynamo(dynamoConf)
 
 	s, err := server.NewServer(db)
 	if err != nil {
-		//TODO: ERROR HANDLING
+		fmt.Printf(errLog + "Failed to establish the server:\n%v\n", err)
+		return err
 	}
 
-	fmt.Println("Starting up server...")
+	fmt.Printf(infoLog + "Starting up server...\n")
+
 	http.HandleFunc(root + "/user", s.UserHandler)
 	http.HandleFunc(root + "/post", s.PostHandler)
 
-	fmt.Printf("Listening on %v\n", fullAddr)
+	fmt.Printf(infoLog + "Listening on %v\n", fullAddr)
+
 	return http.ListenAndServe(fullAddr, nil)
 }

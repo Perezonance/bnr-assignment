@@ -5,14 +5,15 @@ import (
 	"github.com/Perezonance/bnr-assignment/src/pkg/models"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
 const (
-	logRoot = "user-management-server>> "
+	//Temp structured logging solution
+	errLog 		= "ERROR LOG >> "
+	infoLog 	= "INFO  LOG >> "
 )
 
 type (
@@ -23,40 +24,26 @@ type (
 	}
 
 	DynamoConfig struct {
-		UserTable			string
-		PostTable 			string
-		UserTableEndpoint 	string
-		PostTableEndpoint 	string
-		AwsRegion 			string
+		UserTable				string
+		PostTable 				string
+		UserTableEndpoint 		string
+		PostTableEndpoint 		string
+		AWSSession 				*session.Session
 	}
 )
 
-func NewDynamo(c DynamoConfig) (*DynamoClient, error){
-	config := &aws.Config{
-		Credentials: credentials.NewSharedCredentials("", "perezonance-dynamo"),
-		Region:      aws.String(c.AwsRegion),
-	}
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		Config:  			*config,
-		Profile:           	"perezonance-dynamo",
-		SharedConfigState: 	session.SharedConfigEnable,
-	}))
-
-	svc := dynamodb.New(sess)
-
+func NewDynamo(c DynamoConfig) (*DynamoClient){
 	return &DynamoClient{
-		db: svc,
+		db:        dynamodb.New(c.AWSSession),
 		userTable: c.UserTable,
 		postTable: c.PostTable,
-	}, nil
+	}
 }
-
-//TODO:Implement Business Logic
 
 /////////////////////////////////// User Services ///////////////////////////////////
 
 func (d *DynamoClient)GetUser(id float64) (models.User, error){
-	fmt.Printf(logRoot + "Searching %v table for user with id:%v\n", d.userTable, id)
+	fmt.Printf("%vSearching %v table for user with id:%v\n", infoLog, d.userTable, id)
 
 	u := models.User{}
 
@@ -69,15 +56,13 @@ func (d *DynamoClient)GetUser(id float64) (models.User, error){
 		TableName:      aws.String(d.userTable),
 	})
 	if err != nil {
-		//TODO: ERROR HANDLING
-		fmt.Printf("Error getting item from dynamo table:\n%v\n", err)
+		fmt.Printf("%vFailed to get item from table:\n%v\n", errLog, err)
 		return u, err
 	}
 
 	err = dynamodbattribute.UnmarshalMap(res.Item, &u)
 	if err != nil {
-		//TODO: ERROR HANDLING
-		fmt.Printf("Error Unmarshaling item retrieved from dynamodb table:\n%v\n", err)
+		fmt.Printf("%vFailed to unmarshal item retrieved from table:\n%v\n", errLog, err)
 		return u, err
 	}
 
@@ -85,7 +70,7 @@ func (d *DynamoClient)GetUser(id float64) (models.User, error){
 }
 
 func (d *DynamoClient)PostUser(user models.User) error {
-	fmt.Printf(logRoot + "Inserting user into %v table:%v\n", d.userTable, user)
+	fmt.Printf("%vInserting user into %v table:%v\n", infoLog, d.userTable, user)
 
 	attrVal, err := dynamodbattribute.MarshalMap(user)
 	if err != nil {
