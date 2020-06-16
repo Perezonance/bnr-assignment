@@ -5,17 +5,17 @@ import (
 	"time"
 )
 
-func InfoLog(msg string, args ...interface{}) {
+func InfoLog(msg string) {
 	currTime := time.Now().Format("01/09/1997 00:00:00")
-	fmt.Printf("%v::INFO LOG  >> " + fmt.Sprintf(msg, args) + "\n", currTime)
+	fmt.Printf("%v::INFO LOG  >> " + msg + "\n", currTime)
 }
 
-func ErrorLog(msg string, err error, args ...interface{}) {
+func ErrorLog(msg string, err error) {
 	currTime := time.Now().Format("01/09/1997 00:00:00")
-	fmt.Printf("%v::ERROR LOG >> " + fmt.Sprintf(msg, args) + ":\n%v\n", currTime, err)
+	fmt.Printf("%v::ERROR LOG >> " + msg + ":\n%v\n", currTime, err)
 }
 
-func DebugLog(msg string, args ...interface{}) {
+func DebugLog(msg string) {
 	currTime := time.Now().Format("01/09/1997 00:00:00")
-	fmt.Printf("%v::DEBUG LOG >> " + fmt.Sprintf(msg, args) + "\n", currTime)
+	fmt.Printf("%v::DEBUG LOG >> " + msg + "\n", currTime)
 }
