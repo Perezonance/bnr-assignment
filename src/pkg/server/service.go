@@ -3,9 +3,9 @@ package server
 import (
 	"github.com/Perezonance/bnr-assignment/src/pkg/models"
 	"github.com/Perezonance/bnr-assignment/src/pkg/storage"
+	"github.com/Perezonance/bnr-assignment/src/pkg/util"
 
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -18,11 +18,9 @@ type (
 /////////////////////////////////// User Service Functions ///////////////////////////////////
 
 func NewServer(p storage.Persistence) (Server, error) {
-	//TODO: Server instance id setup
 	return Server{db:p}, nil
 }
 
-//TODO: need to allow both an array or a single json object as request payload
 func (s *Server)getUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		users []models.User
@@ -36,14 +34,14 @@ func (s *Server)getUser(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&reqId)
 		if err != nil {
 			//Input invalid
-			fmt.Printf("Input not valid")
+			util.InfoLog("Request input invalid")
 			writeRes(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), w)
 		}
 	}
 	defer func() {
 		err := r.Body.Close()
 		if err != nil {
-			fmt.Printf("Error:%v", err)
+			util.ErrorLog("Failed to close reader stream of request body", err)
 			writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
 			return
 		}
@@ -55,7 +53,7 @@ func (s *Server)getUser(w http.ResponseWriter, r *http.Request) {
 		go func(){
 			user, err := s.db.GetUser(i)
 			if err != nil {
-				fmt.Printf("Error:%v", err)
+				util.ErrorLog("Failed to getUser", err)
 				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
 				return
 			}
@@ -63,6 +61,11 @@ func (s *Server)getUser(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 	raw, err := json.Marshal(users)
+	if err != nil {
+		util.ErrorLog("Failed to marshal users into response", err)
+		writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+		return
+	}
 	res := string(raw)
 	writeRes(http.StatusOK, res, w)
 }
@@ -79,16 +82,25 @@ func (s *Server)postUser(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&reqUser)
 		if err != nil {
 			//Input not valid
-			fmt.Printf("Input not valid")
+			util.InfoLog("Request input invalid")
 			writeRes(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), w)
 		}
 	}
+	defer func() {
+		err := r.Body.Close()
+		if err != nil {
+			util.ErrorLog("Failed to close reader stream of request body", err)
+			writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+			return
+		}
+	}()
+
 	users = append(reqUsers.Payload, reqUser.User)
 	for _, u := range users {
 		go func(){
 			err := s.db.PostUser(u)
 			if err != nil {
-				fmt.Printf("Error:%v", err)
+				util.ErrorLog("Failed to PostUser", err)
 				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
 				return
 			}
@@ -110,14 +122,14 @@ func (s *Server)deleteUser(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&reqId)
 		if err != nil {
 			//Input invalid
-			fmt.Printf("Input not valid")
+			util.InfoLog("Request input invalid")
 			writeRes(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), w)
 		}
 	}
 	defer func() {
 		err := r.Body.Close()
 		if err != nil {
-			fmt.Printf("Error:%v", err)
+			util.ErrorLog("Failed to close reader stream of request body", err)
 			writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
 			return
 		}
@@ -129,13 +141,13 @@ func (s *Server)deleteUser(w http.ResponseWriter, r *http.Request) {
 		go func(){
 			u, err := s.db.GetUser(i)
 			if err != nil {
-				fmt.Printf("Error:%v", err)
+				util.ErrorLog("Failed to GetUser", err)
 				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
 				return
 			}
 			err = s.db.DeleteUser(u)
 			if err != nil {
-				fmt.Printf("Error:%v", err)
+				util.ErrorLog("Failed to DeleteUser", err)
 				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
 				return
 			}
@@ -144,6 +156,11 @@ func (s *Server)deleteUser(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 	raw, err := json.Marshal(users)
+	if err != nil {
+		util.ErrorLog("Failed to marshal deleted users into response", err)
+		writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+		return
+	}
 	res := string(raw)
 	writeRes(http.StatusOK, res, w)
 }
@@ -163,14 +180,14 @@ func (s *Server)getPost(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&reqId)
 		if err != nil {
 			//Input invalid
-			fmt.Printf("Input not valid")
+			util.InfoLog("Request input invalid")
 			writeRes(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), w)
 		}
 	}
 	defer func() {
 		err := r.Body.Close()
 		if err != nil {
-			fmt.Printf("Error:%v", err)
+			util.ErrorLog("Failed to close reader stream of request body", err)
 			writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
 			return
 		}
@@ -182,7 +199,7 @@ func (s *Server)getPost(w http.ResponseWriter, r *http.Request) {
 		go func(){
 			post, err := s.db.GetPost(i)
 			if err != nil {
-				fmt.Printf("Error:%v", err)
+				util.ErrorLog("Failed to GetPost", err)
 				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
 				return
 			}
@@ -190,6 +207,11 @@ func (s *Server)getPost(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 	raw, err := json.Marshal(posts)
+	if err != nil {
+		util.ErrorLog("Failed to marshal posts into response", err)
+		writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+		return
+	}
 	res := string(raw)
 	writeRes(http.StatusOK, res, w)
 }
@@ -206,16 +228,25 @@ func (s *Server)postPost(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&reqPost)
 		if err != nil {
 			//Input not valid
-			fmt.Printf("Input not valid")
+			util.InfoLog("Request input invalid")
 			writeRes(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), w)
 		}
 	}
+	defer func() {
+		err := r.Body.Close()
+		if err != nil {
+			util.ErrorLog("Failed to close reader stream of request body", err)
+			writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+			return
+		}
+	}()
+
 	posts = append(reqPosts.Payload, reqPost.Post)
 	for _, p := range posts {
 		go func(){
 			err := s.db.PostPost(p)
 			if err != nil {
-				fmt.Printf("Error:%v", err)
+				util.ErrorLog("Failed to PostPost", err)
 				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
 				return
 			}
@@ -237,14 +268,14 @@ func (s *Server)deletePost(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&reqId)
 		if err != nil {
 			//Input invalid
-			fmt.Printf("Input not valid")
+			util.InfoLog("Request input invalid")
 			writeRes(http.StatusBadRequest, http.StatusText(http.StatusBadRequest), w)
 		}
 	}
 	defer func() {
 		err := r.Body.Close()
 		if err != nil {
-			fmt.Printf("Error:%v", err)
+			util.ErrorLog("Failed to close reader stream of request body", err)
 			writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
 			return
 		}
@@ -256,13 +287,13 @@ func (s *Server)deletePost(w http.ResponseWriter, r *http.Request) {
 		go func(){
 			u, err := s.db.GetPost(i)
 			if err != nil {
-				fmt.Printf("Error:%v", err)
+				util.ErrorLog("Failed to GetPost", err)
 				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
 				return
 			}
 			err = s.db.DeletePost(u)
 			if err != nil {
-				fmt.Printf("Error:%v", err)
+				util.ErrorLog("Failed to DeleteUser", err)
 				writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
 				return
 			}
@@ -271,6 +302,12 @@ func (s *Server)deletePost(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 	raw, err := json.Marshal(posts)
+	if err != nil {
+		util.ErrorLog("Failed to marshal deleted posts into response", err)
+		writeRes(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), w)
+		return
+	}
+
 	res := string(raw)
 	writeRes(http.StatusOK, res, w)
 }
