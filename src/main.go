@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Perezonance/bnr-assignment/src/pkg/server"
 	"github.com/Perezonance/bnr-assignment/src/pkg/storage"
+	"github.com/Perezonance/bnr-assignment/src/pkg/util"
 
 	"fmt"
 	"net/http"
@@ -32,13 +33,14 @@ const (
 )
 
 func main() {
-	fmt.Println(start(true))
+	util.ErrorLog("", start(true))
 }
 
 func start(mock bool) error {
 	var db storage.Persistence
 
 	if !mock {
+		util.InfoLog("Setting up connection to AWS DynamoDB")
 		sessionConf := storage.AWSSessionConfig{
 			AWSRegion:             sessAWSRegion,
 			AWSCredentialsProfile: sessAWSCredentialsProfile,
@@ -48,7 +50,7 @@ func start(mock bool) error {
 
 		sess, err := storage.NewAWSSession(sessionConf)
 		if err != nil {
-			fmt.Printf(errLog + "Failed to establish an AWS session:\n%v\n", err)
+			util.ErrorLog("Failed to establish an AWS Session", err)
 			return err
 		}
 
@@ -62,6 +64,7 @@ func start(mock bool) error {
 
 		db = storage.NewDynamo(dynamoConf)
 	} else {
+		util.InfoLog("Setting up a Mock DynamoDB")
 		mockConf := storage.DynamoMockConfig{
 			UserTableName: dynamoUserTable,
 			PostTableName: dynamoPostTable,
@@ -73,16 +76,16 @@ func start(mock bool) error {
 	}
 	s, err := server.NewServer(db)
 	if err != nil {
-		fmt.Printf(errLog + "Failed to establish the server:\n%v\n", err)
+		util.ErrorLog("Failed to establish the server", err)
 		return err
 	}
 
-	fmt.Printf(infoLog + "Starting up server...\n")
+	util.InfoLog("Starting up server...")
 
 	http.HandleFunc(root + "/user", s.UserHandler)
 	http.HandleFunc(root + "/post", s.PostHandler)
 
-	fmt.Printf(infoLog + "Listening on %v\n", fullAddr)
+	util.InfoLog(fmt.Sprintf("Listening on %v\n", fullAddr))
 
 	return http.ListenAndServe(fullAddr, nil)
 }
