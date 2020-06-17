@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"github.com/Perezonance/bnr-assignment/src/pkg/models"
 	"github.com/Perezonance/bnr-assignment/src/pkg/storage"
 	"github.com/Perezonance/bnr-assignment/src/pkg/util"
@@ -98,6 +99,7 @@ func (s *Server)postUser(w http.ResponseWriter, r *http.Request) {
 	users = append(reqUsers.Payload, reqUser.User)
 	for _, u := range users {
 		go func(){
+			util.DebugLog(fmt.Sprintf("User being inserted:\n%v", u))
 			err := s.db.PostUser(u)
 			if err != nil {
 				util.ErrorLog("Failed to PostUser", err)

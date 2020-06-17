@@ -27,6 +27,10 @@ const (
 	dynamoPostTable = "bnr-posts"
 	dynamoUserTableEndpoint = ""
 	dynamoPostTableEndpoint = ""
+
+	//Mock constants
+	mockUserTable = "mock-users"
+	mockPostTable = "mock-posts"
 )
 
 func main() {
@@ -63,8 +67,8 @@ func start(mock bool) error {
 	} else {
 		util.InfoLog("Setting up a Mock DynamoDB")
 		mockConf := storage.DynamoMockConfig{
-			UserTableName: dynamoUserTable,
-			PostTableName: dynamoPostTable,
+			UserTableName: mockUserTable,
+			PostTableName: mockPostTable,
 		}
 
 		mock := storage.NewMockDynamo(mockConf)
