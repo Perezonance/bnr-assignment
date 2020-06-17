@@ -7,19 +7,24 @@ import (
 
 const (
 	timeFormat = "01/02/2006 15:04:05"
+
+	colorReset = "\033[0m"
+	colorRed = "\033[31m"
+	colorCyan = "\033[36m"
+	colorYellow = "\033[33m"
 )
 
 func InfoLog(msg string) {
 	currTime := time.Now().Format(timeFormat)
-	fmt.Printf("%v::INFO LOG  >> " + msg + "\n", currTime)
+	fmt.Printf(colorCyan + "%v::INFO LOG  >> " + colorReset + msg + "\n", currTime)
 }
 
 func ErrorLog(msg string, err error) {
 	currTime := time.Now().Format(timeFormat)
-	fmt.Printf("%v::ERROR LOG >> " + msg + ":\n%v\n", currTime, err)
+	fmt.Printf(colorRed + "%v::ERROR LOG >> " + colorReset + msg + ":\n%v\n", currTime, err)
 }
 
 func DebugLog(msg string) {
 	currTime := time.Now().Format(timeFormat)
-	fmt.Printf("%v::DEBUG LOG >> " + msg + "\n", currTime)
+	fmt.Printf(colorYellow + "%v::DEBUG LOG >> " + colorReset + msg + "\n", currTime)
 }
