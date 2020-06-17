@@ -3,10 +3,12 @@ package server
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/Perezonance/bnr-assignment/src/pkg/util"
 )
 
 func (s *Server)UserHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("Received a %v request at UserHandler\n", r.Method)
+	util.InfoLog(fmt.Sprintf("Received a %v request at UserHandler", r.Method))
 	switch r.Method {
 	case http.MethodGet:
 		s.getUser(w, r)
@@ -17,14 +19,14 @@ func (s *Server)UserHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		s.deleteUser(w, r)
 	default:
-		fmt.Printf("ERROR LOG > %v type of Request not handled..", r.Method)
+		util.InfoLog(fmt.Sprintf("request type %v not handled", r.Method))
 		writeRes(http.StatusNotFound, http.StatusText(http.StatusNotFound), w)
 	}
 	return
 }
 
 func (s *Server)PostHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("Received a %v request at PostHandler\n", r.Method)
+	util.InfoLog(fmt.Sprintf("Received a %v request at PostHandler", r.Method))
 	switch r.Method {
 	case http.MethodGet:
 		s.getPost(w, r)
@@ -35,7 +37,7 @@ func (s *Server)PostHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		s.deletePost(w, r)
 	default:
-		fmt.Printf("ERROR LOG > %v type of Request not handled..", r.Method)
+		util.InfoLog(fmt.Sprintf("request type %v not handled", r.Method))
 		writeRes(http.StatusNotFound, http.StatusText(http.StatusNotFound), w)
 	}
 	return
