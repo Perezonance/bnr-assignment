@@ -9,11 +9,8 @@ import (
 	"net/http"
 )
 
+//TODO: Remove hard coded values and pull from ENV instead
 const (
-	//Temp structured logging solution
-	errLog 		= "ERROR LOG >> "
-	infoLog 	= "INFO  LOG >> "
-
 	root = "/api/v1"
 	port = "8080"
 	addr = "0.0.0.0"
@@ -74,6 +71,7 @@ func start(mock bool) error {
 
 		db = mock
 	}
+
 	s, err := server.NewServer(db)
 	if err != nil {
 		util.ErrorLog("Failed to establish the server", err)
@@ -81,10 +79,8 @@ func start(mock bool) error {
 	}
 
 	util.InfoLog("Starting up server...")
-
 	http.HandleFunc(root + "/user", s.UserHandler)
 	http.HandleFunc(root + "/post", s.PostHandler)
-
 	util.InfoLog(fmt.Sprintf("Listening on %v\n", fullAddr))
 
 	return http.ListenAndServe(fullAddr, nil)
