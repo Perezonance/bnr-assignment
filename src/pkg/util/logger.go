@@ -10,7 +10,7 @@ const (
 
 	colorReset = "\033[0m"
 	colorRed = "\033[31m"
-	colorCyan = "\033[36m"
+	colorCyan = "\033[32m"//32 - green
 	colorYellow = "\033[33m"
 )
 
