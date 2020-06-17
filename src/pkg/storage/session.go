@@ -1,15 +1,11 @@
 package storage
 
 import (
-	"fmt"
+	"github.com/Perezonance/bnr-assignment/src/pkg/util"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-)
-
-const (
-	errLog = "ERROR LOG >> "
 )
 
 type (
@@ -19,7 +15,6 @@ type (
 		AWSConfigProfile 		string
 		AWSConfigFile			string
 	}
-
 )
 
 func NewAWSSession(c AWSSessionConfig) (*session.Session, error){
@@ -36,8 +31,7 @@ func NewAWSSession(c AWSSessionConfig) (*session.Session, error){
 		SharedConfigState:       0,
 	})
 	if err != nil {
-		//TODO: ERROR HANDLING
-		fmt.Printf("%vFailed to setup session with given configuration:\n%v\n", errLog, err)
+		util.ErrorLog("Failed to setup session with given configuration", err)
 		return nil, err
 	}
 
