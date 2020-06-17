@@ -2,6 +2,8 @@ package storage
 
 import (
 	"fmt"
+
+	"github.com/Perezonance/bnr-assignment/src/pkg/util"
 	"github.com/Perezonance/bnr-assignment/src/pkg/models"
 	"github.com/Perezonance/bnr-assignment/src/pkg/primitives"
 )
@@ -10,17 +12,30 @@ type (
 	DynamoMock struct {
 		users map[float64]models.User
 		posts map[float64]models.Post
+
+		userTable string
+		postTable string
+	}
+
+	DynamoMockConfig struct {
+		UserTableName string
+		PostTableName string
 	}
 )
 
-func NewMockDynamo() (*DynamoMock, error){
-	return &DynamoMock{}, nil
+func NewMockDynamo(c DynamoMockConfig) *DynamoMock{
+	return &DynamoMock{
+		users:     make(map[float64]models.User),
+		posts:     make(map[float64]models.Post),
+		userTable: c.UserTableName,
+		postTable: c.PostTableName,
+	}
 }
 
 /////////////////////////////////// User Dynamo Methods ///////////////////////////////////
 
 func (d *DynamoMock)GetUser(id float64) (models.User, error){
-	fmt.Printf(logRoot + "Searching %v table for user with id:%v\n", userTable, id)
+	util.InfoLog(fmt.Sprintf("Searching %v table for user with id:%v", d.userTable, id))
 
 	var (
 		user = 	models.User{}

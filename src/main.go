@@ -32,33 +32,45 @@ const (
 )
 
 func main() {
-	fmt.Println(start())
+	fmt.Println(start(true))
 }
 
-func start() error {
-	sessionConf := storage.AWSSessionConfig{
-		AWSRegion:             sessAWSRegion,
-		AWSCredentialsProfile: sessAWSCredentialsProfile,
-		AWSConfigProfile:      sessAWSConfigProfile,
-		AWSConfigFile:         sessAWSConfigFile,
+func start(mock bool) error {
+	var db storage.Persistence
+
+	if !mock {
+		sessionConf := storage.AWSSessionConfig{
+			AWSRegion:             sessAWSRegion,
+			AWSCredentialsProfile: sessAWSCredentialsProfile,
+			AWSConfigProfile:      sessAWSConfigProfile,
+			AWSConfigFile:         sessAWSConfigFile,
+		}
+
+		sess, err := storage.NewAWSSession(sessionConf)
+		if err != nil {
+			fmt.Printf(errLog + "Failed to establish an AWS session:\n%v\n", err)
+			return err
+		}
+
+		dynamoConf := storage.DynamoConfig{
+			UserTable:        	dynamoUserTable,
+			PostTable:        	dynamoPostTable,
+			UserTableEndpoint: 	dynamoUserTableEndpoint,
+			PostTableEndpoint: 	dynamoPostTableEndpoint,
+			AWSSession:     	sess,
+		}
+
+		db = storage.NewDynamo(dynamoConf)
+	} else {
+		mockConf := storage.DynamoMockConfig{
+			UserTableName: dynamoUserTable,
+			PostTableName: dynamoPostTable,
+		}
+
+		mock := storage.NewMockDynamo(mockConf)
+
+		db = mock
 	}
-
-	sess, err := storage.NewAWSSession(sessionConf)
-	if err != nil {
-		fmt.Printf(errLog + "Failed to establish an AWS session:\n%v\n", err)
-		return err
-	}
-
-	dynamoConf := storage.DynamoConfig{
-		UserTable:        	dynamoUserTable,
-		PostTable:        	dynamoPostTable,
-		UserTableEndpoint: 	dynamoUserTableEndpoint,
-		PostTableEndpoint: 	dynamoPostTableEndpoint,
-		AWSSession:     	sess,
-	}
-
-	db := storage.NewDynamo(dynamoConf)
-
 	s, err := server.NewServer(db)
 	if err != nil {
 		fmt.Printf(errLog + "Failed to establish the server:\n%v\n", err)
