@@ -11,15 +11,15 @@ import (
 
 type (
 	Server struct {
-		db *storage.DynamoDB
+		db storage.Persistence
 	}
 )
 
 /////////////////////////////////// User Service Functions ///////////////////////////////////
 
-func NewServer(db *storage.DynamoDB) (Server, error) {
+func NewServer(p storage.Persistence) (Server, error) {
 	//TODO: Server instance id setup
-	return Server{db:db}, nil
+	return Server{db:p}, nil
 }
 
 //TODO: need to allow both an array or a single json object as request payload

@@ -38,8 +38,7 @@ func NewDynamo(c DynamoConfig) *DynamoClient{
 /////////////////////////////////// User Services ///////////////////////////////////
 
 func (d *DynamoClient)GetUser(id float64) (models.User, error){
-	fmt.Printf("%vSearching %v table for user with id:%v\n", infoLog, d.userTable, id)
-	util.InfoLog("Searching %v table for user with id:%v", d.userTable, id)
+	util.InfoLog(fmt.Sprintf("Searching %v table for user with id:%v", d.userTable, id))
 
 	u := models.User{}
 
@@ -52,13 +51,13 @@ func (d *DynamoClient)GetUser(id float64) (models.User, error){
 		TableName:      aws.String(d.userTable),
 	})
 	if err != nil {
-		fmt.Printf("%vFailed to get item from table:\n%v\n", errLog, err)
+		util.ErrorLog("Failed to get item from table", err)
 		return u, err
 	}
 
 	err = dynamodbattribute.UnmarshalMap(res.Item, &u)
 	if err != nil {
-		fmt.Printf("%vFailed to unmarshal item retrieved from table:\n%v\n", errLog, err)
+		util.ErrorLog("Failed to unmarshal item retrieved from table", err)
 		return u, err
 	}
 
@@ -66,12 +65,11 @@ func (d *DynamoClient)GetUser(id float64) (models.User, error){
 }
 
 func (d *DynamoClient)PostUser(user models.User) error {
-	fmt.Printf("%vInserting user into %v table:%v\n", infoLog, d.userTable, user)
+	util.InfoLog(fmt.Sprintf("Inserting user into %v table:\n%v", d.userTable, user))
 
 	attrVal, err := dynamodbattribute.MarshalMap(user)
 	if err != nil {
-		//TODO: ERROR HANDLING
-		fmt.Printf("Error creating dynamodb attributeValue:\n%v\n", err)
+		util.ErrorLog("Error creating dynamodb attributeValue", err)
 		return err
 	}
 
@@ -82,16 +80,14 @@ func (d *DynamoClient)PostUser(user models.User) error {
 
 	_, err = d.db.PutItem(item)
 	if err != nil {
-		//TODO: ERROR HANDLING
-		fmt.Printf("Error putting item in db table:\n%v\n", err)
+		util.ErrorLog("Error putting item into db table", err)
 		return err
 	}
-
 	return nil
 }
 
 func (d *DynamoClient)DeleteUser(user models.User) error {
-	fmt.Printf(logRoot + "Deleting user from %v table:%v\n", d.userTable, user)
+	util.InfoLog(fmt.Sprintf("Deleting user from %v table:%v\n", d.userTable, user))
 
 	delInput := &dynamodb.DeleteItemInput{
 		Key: 		map[string]*dynamodb.AttributeValue{
@@ -104,18 +100,16 @@ func (d *DynamoClient)DeleteUser(user models.User) error {
 
 	_, err := d.db.DeleteItem(delInput)
 	if err != nil {
-		//TODO: ERROR HANDLING
-		fmt.Printf("Error deleting item from table:\n%v\n", err)
+		util.ErrorLog("Failed to delete item from table", err)
 		return err
 	}
-
 	return nil
 }
 
 /////////////////////////////////// Post Services ///////////////////////////////////
 
 func (d *DynamoClient)GetPost(id float64) (models.Post, error){
-	fmt.Printf(logRoot + "Searching %v table for post with id:%v\n", d.postTable, id)
+	util.InfoLog(fmt.Sprintf("Searching %v table for post with id:%v\n", d.postTable, id))
 
 	p := models.Post{}
 
@@ -128,28 +122,24 @@ func (d *DynamoClient)GetPost(id float64) (models.Post, error){
 		TableName: aws.String(d.postTable),
 	})
 	if err != nil {
-		//TODO: ERROR HANDLING
-		fmt.Printf("Error getting item from dynamo table:\n%v\n", err)
+		util.ErrorLog("Failed to get item from table", err)
 		return p, err
 	}
 
 	err = dynamodbattribute.UnmarshalMap(res.Item, &p)
 	if err != nil {
-		//TODO: ERROR HANDLING
-		fmt.Printf("Error Unmarshaling item retrieved from dynamodb table:\n%v\n", err)
+		util.ErrorLog("Failed to unmarshal retrieved item", err)
 		return p, err
 	}
-
 	return p, nil
 }
 
 func (d *DynamoClient)PostPost(post models.Post) error {
-	fmt.Printf(logRoot + "Inserting post into %v table:%v\n", d.postTable, post)
+	util.InfoLog(fmt.Sprintf("Inserting post into %v table:%v\n", d.postTable, post))
 
 	attrVal, err := dynamodbattribute.MarshalMap(post)
 	if err != nil {
-		//TODO: ERROR HANDLING
-		fmt.Printf("Error creating dynamodb attributeValue:\n%v\n", err)
+		util.ErrorLog("Failed to create dynamodb attributeValue", err)
 		return err
 	}
 
@@ -160,16 +150,14 @@ func (d *DynamoClient)PostPost(post models.Post) error {
 
 	_, err = d.db.PutItem(item)
 	if err != nil {
-		//TODO: ERROR HANDLING
-		fmt.Printf("Error putting item in db table:\n%v\n", err)
+		util.ErrorLog("Failed to put item in table", err)
 		return err
 	}
-
 	return nil
 }
 
 func (d *DynamoClient)DeletePost(post models.Post) error {
-	fmt.Printf(logRoot + "Deleting post from %v table:%v\n", d.postTable, post)
+	util.InfoLog(fmt.Sprintf("Deleting post from %v table:%v\n", d.postTable, post))
 
 	delInput := &dynamodb.DeleteItemInput{
 		Key: 		map[string]*dynamodb.AttributeValue{
@@ -182,10 +170,8 @@ func (d *DynamoClient)DeletePost(post models.Post) error {
 
 	_, err := d.db.DeleteItem(delInput)
 	if err != nil {
-		//TODO: ERROR HANDLING
-		fmt.Printf("Error deleting item from table:\n%v\n", err)
+		util.ErrorLog("Failed to delete item from table", err)
 		return err
 	}
-
 	return nil
 }
