@@ -10,8 +10,8 @@ import (
 
 type (
 	DynamoMock struct {
-		users map[float64]models.User
-		posts map[float64]models.Post
+		Users map[float64]models.User
+		Posts map[float64]models.Post
 
 		userTable string
 		postTable string
@@ -25,8 +25,8 @@ type (
 
 func NewMockDynamo(c DynamoMockConfig) *DynamoMock{
 	return &DynamoMock{
-		users:     make(map[float64]models.User),
-		posts:     make(map[float64]models.Post),
+		Users:     make(map[float64]models.User),
+		Posts:     make(map[float64]models.Post),
 		userTable: c.UserTableName,
 		postTable: c.PostTableName,
 	}
@@ -41,7 +41,7 @@ func (d *DynamoMock)GetUser(id float64) (models.User, error){
 		user = 	models.User{}
 		err  =	primitives.ErrUserNotFound
 	)
-	user = d.users[id]
+	user = d.Users[id]
 	if(user != models.User{}) {
 		err = nil
 	}
@@ -53,13 +53,13 @@ func (d *DynamoMock)GetUser(id float64) (models.User, error){
 
 func (d *DynamoMock)PostUser(user models.User) error {
 	util.InfoLog(fmt.Sprintf("Inserting user into %v table:\n%v", d.userTable, user))
-	d.users[user.Id] = user
+	d.Users[user.Id] = user
 	return nil
 }
 
 func (d *DynamoMock)DeleteUser(user models.User) error {
 	util.InfoLog(fmt.Sprintf("Deleting user from %v table:%v\n", d.userTable, user))
-	delete(d.users, user.Id)
+	delete(d.Users, user.Id)
 	return nil
 }
 
@@ -73,7 +73,7 @@ func (d *DynamoMock)GetPost(id float64) (models.Post, error){
 		err = primitives.ErrPostNotFound
 	)
 
-	post = d.posts[id]
+	post = d.Posts[id]
 	if(post != models.Post{}) {
 		err = nil
 	}
@@ -82,12 +82,12 @@ func (d *DynamoMock)GetPost(id float64) (models.Post, error){
 
 func (d *DynamoMock)PostPost(post models.Post) error {
 	util.InfoLog(fmt.Sprintf("Inserting post into %v table:%v\n", d.postTable, post))
-	d.posts[post.Id] = post
+	d.Posts[post.Id] = post
 	return nil
 }
 
 func (d *DynamoMock)DeletePost(post models.Post) error {
 	util.InfoLog(fmt.Sprintf("Deleting post from %v table:%v\n", d.postTable, post))
-	delete(d.posts, post.Id)
+	delete(d.Posts, post.Id)
 	return nil
 }
