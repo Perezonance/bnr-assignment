@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Perezonance/bnr-assignment/src/pkg/handlers"
 	"github.com/Perezonance/bnr-assignment/src/pkg/server"
 	"github.com/Perezonance/bnr-assignment/src/pkg/storage"
 	"github.com/Perezonance/bnr-assignment/src/pkg/util"
@@ -82,9 +83,11 @@ func start(mock bool) error {
 		return err
 	}
 
+	h := handlers.NewHandler(s)
+
 	util.InfoLog("Starting up server...")
-	http.HandleFunc(root + "/user", s.UserHandler)
-	http.HandleFunc(root + "/post", s.PostHandler)
+	http.HandleFunc(root + "/user", h.UserHandler)
+	http.HandleFunc(root + "/post", h.PostHandler)
 	util.InfoLog(fmt.Sprintf("Listening on %v\n", fullAddr))
 
 	return http.ListenAndServe(fullAddr, nil)
